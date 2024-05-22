@@ -1,11 +1,14 @@
 package network
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"sync"
 
+	"github.com/forgoer/openssl"
 	"github.com/gorilla/websocket"
+	"github.com/zerodot618/zerokk-sg-server/utils"
 )
 
 // wsServer websocket 服务
@@ -49,7 +52,48 @@ func (w *wsServer) readMsgLoop() {
 			break
 		}
 		// 将收到的数据进行路由
-		fmt.Println(data)
+		// 1. data 解压
+		data, err = utils.UnZip(data)
+		if err != nil {
+			fmt.Println("解压数据出错: ", err)
+			continue
+		}
+		// 2. 解密消息
+		secretKey, err := w.GetProperty("secretKey")
+		if err == nil {
+			// 有加密
+			key := secretKey.(string)
+			// 解密
+			d, err := utils.AesCBCDecrypt(data, []byte(key), []byte(key), openssl.ZEROS_PADDING)
+			if err != nil {
+				log.Println("解密数据出错: ", err)
+				// 出错 发起握手
+				// w.Handshake()
+			} else {
+				data = d
+			}
+		}
+		// 3. data 转为 body
+		body := &ReqBody{}
+		err = json.Unmarshal(data, body)
+		if err != nil {
+			log.Println("数据格式有误: ", err)
+		} else {
+			// 获取到数据
+			req := &WsMsgReq{
+				Body: body,
+				Conn: w,
+			}
+			rsp := &WsMsgRsp{
+				Body: &RspBody{
+					Seq:  req.Body.Seq,
+					Name: body.Name,
+				},
+			}
+			w.router.Run(req, rsp)
+			w.outChan <- rsp
+		}
+
 	}
 	w.Close()
 }

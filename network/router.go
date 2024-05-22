@@ -13,3 +13,7 @@ type group struct {
 type router struct {
 	groups map[string]*group // 路由分组
 }
+
+func (r *router) Run(req *WsMsgReq, rsp *WsMsgRsp) {
+	
+}
