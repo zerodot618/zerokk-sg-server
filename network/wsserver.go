@@ -14,7 +14,7 @@ import (
 // wsServer websocket 服务
 type wsServer struct {
 	wsConn       *websocket.Conn        // 连接
-	router       *router                // 路由
+	router       *Router                // 路由
 	outChan      chan *WsMsgRsp         // 写队列
 	Seq          int64                  // 序号
 	property     map[string]interface{} // 属性
@@ -111,7 +111,7 @@ func (w *wsServer) writeMsgLoop() {
 	}
 }
 
-func (w *wsServer) Router(router *router) {
+func (w *wsServer) Router(router *Router) {
 	w.router = router
 }
 

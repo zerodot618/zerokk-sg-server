@@ -10,7 +10,7 @@ import (
 // server web服务
 type server struct {
 	addr   string  // 服务地址
-	router *router // 路由
+	router *Router // 路由
 }
 
 // NewServer 创建服务器
@@ -18,6 +18,10 @@ func NewServer(addr string) *server {
 	return &server{
 		addr: addr,
 	}
+}
+
+func (s *server) Router(router *Router) {
+	s.router = router
 }
 
 // 启动服务

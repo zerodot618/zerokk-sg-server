@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/zerodot618/zerokk-sg-server/config"
 	"github.com/zerodot618/zerokk-sg-server/network"
+	"github.com/zerodot618/zerokk-sg-server/server/login"
 )
 
 func main() {
@@ -11,6 +12,8 @@ func main() {
 	port := config.File.MustValue("login_server", "port", "8004")
 
 	// 启动服务
-	server := network.NewServer(host + ":" + port)
-	server.Start()
+	s := network.NewServer(host + ":" + port)
+	login.Init()
+	s.Router(login.Router)
+	s.Start()
 }
